@@ -1,0 +1,995 @@
+module fft16_top (
+    input clk,
+    input signed [15:0] in_real_0, in_real_1, in_real_2, in_real_3, 
+    in_real_4, in_real_5, in_real_6, in_real_7,
+    in_real_8, in_real_9, in_real_10, in_real_11,
+    in_real_12, in_real_13, in_real_14, in_real_15,
+    input signed [15:0] in_imag_0, in_imag_1, in_imag_2, in_imag_3, 
+    in_imag_4, in_imag_5, in_imag_6, in_imag_7,
+    in_imag_8, in_imag_9, in_imag_10, in_imag_11,
+    in_imag_12, in_imag_13, in_imag_14, in_imag_15,
+    output signed [15:0] out_real_0, out_real_1, out_real_2, out_real_3, 
+    out_real_4, out_real_5, out_real_6, out_real_7,
+    out_real_8, out_real_9, out_real_10, out_real_11,
+    out_real_12, out_real_13, out_real_14, out_real_15,
+    output signed [15:0] out_imag_0, out_imag_1, out_imag_2, out_imag_3, 
+    out_imag_4, out_imag_5, out_imag_6, out_imag_7,
+    out_imag_8, out_imag_9, out_imag_10, out_imag_11,
+    out_imag_12, out_imag_13, out_imag_14, out_imag_15
+);
+
+    // Stage 1 signals
+    wire signed [15:0] stage1_real_0, stage1_real_1, stage1_real_2, stage1_real_3, 
+                      stage1_real_4, stage1_real_5, stage1_real_6, stage1_real_7,
+                      stage1_real_8, stage1_real_9, stage1_real_10, stage1_real_11,
+                      stage1_real_12, stage1_real_13, stage1_real_14, stage1_real_15;
+    wire signed [15:0] stage1_imag_0, stage1_imag_1, stage1_imag_2, stage1_imag_3, 
+                      stage1_imag_4, stage1_imag_5, stage1_imag_6, stage1_imag_7,
+                      stage1_imag_8, stage1_imag_9, stage1_imag_10, stage1_imag_11,
+                      stage1_imag_12, stage1_imag_13, stage1_imag_14, stage1_imag_15;
+    
+    // Stage 2 signals
+    wire signed [15:0] stage2_real_0, stage2_real_1, stage2_real_2, stage2_real_3, 
+                      stage2_real_4, stage2_real_5, stage2_real_6, stage2_real_7,
+                      stage2_real_8, stage2_real_9, stage2_real_10, stage2_real_11,
+                      stage2_real_12, stage2_real_13, stage2_real_14, stage2_real_15;
+    wire signed [15:0] stage2_imag_0, stage2_imag_1, stage2_imag_2, stage2_imag_3, 
+                      stage2_imag_4, stage2_imag_5, stage2_imag_6, stage2_imag_7,
+                      stage2_imag_8, stage2_imag_9, stage2_imag_10, stage2_imag_11,
+                      stage2_imag_12, stage2_imag_13, stage2_imag_14, stage2_imag_15;
+    
+    // Stage 3 signals
+    wire signed [15:0] stage3_real_0, stage3_real_1, stage3_real_2, stage3_real_3, 
+                      stage3_real_4, stage3_real_5, stage3_real_6, stage3_real_7,
+                      stage3_real_8, stage3_real_9, stage3_real_10, stage3_real_11,
+                      stage3_real_12, stage3_real_13, stage3_real_14, stage3_real_15;
+    wire signed [15:0] stage3_imag_0, stage3_imag_1, stage3_imag_2, stage3_imag_3, 
+                      stage3_imag_4, stage3_imag_5, stage3_imag_6, stage3_imag_7,
+                      stage3_imag_8, stage3_imag_9, stage3_imag_10, stage3_imag_11,
+                      stage3_imag_12, stage3_imag_13, stage3_imag_14, stage3_imag_15;
+    
+    // Stage 4 signals
+    wire signed [15:0] stage4_real_0, stage4_real_1, stage4_real_2, stage4_real_3, 
+                      stage4_real_4, stage4_real_5, stage4_real_6, stage4_real_7,
+                      stage4_real_8, stage4_real_9, stage4_real_10, stage4_real_11,
+                      stage4_real_12, stage4_real_13, stage4_real_14, stage4_real_15;
+    wire signed [15:0] stage4_imag_0, stage4_imag_1, stage4_imag_2, stage4_imag_3, 
+                      stage4_imag_4, stage4_imag_5, stage4_imag_6, stage4_imag_7,
+                      stage4_imag_8, stage4_imag_9, stage4_imag_10, stage4_imag_11,
+                      stage4_imag_12, stage4_imag_13, stage4_imag_14, stage4_imag_15;
+    
+    // Reordered signals
+    wire signed [15:0] reordered_real_0, reordered_real_1, reordered_real_2, reordered_real_3, 
+                      reordered_real_4, reordered_real_5, reordered_real_6, reordered_real_7,
+                      reordered_real_8, reordered_real_9, reordered_real_10, reordered_real_11,
+                      reordered_real_12, reordered_real_13, reordered_real_14, reordered_real_15;
+    wire signed [15:0] reordered_imag_0, reordered_imag_1, reordered_imag_2, reordered_imag_3, 
+                      reordered_imag_4, reordered_imag_5, reordered_imag_6, reordered_imag_7,
+                      reordered_imag_8, reordered_imag_9, reordered_imag_10, reordered_imag_11,
+                      reordered_imag_12, reordered_imag_13, reordered_imag_14, reordered_imag_15;
+
+    // Stage 1
+    fft_stage1_16pt u_stage1 (
+        .clk(clk),
+        .in_real_0(in_real_0), .in_real_1(in_real_1), .in_real_2(in_real_2), .in_real_3(in_real_3),
+        .in_real_4(in_real_4), .in_real_5(in_real_5), .in_real_6(in_real_6), .in_real_7(in_real_7),
+        .in_real_8(in_real_8), .in_real_9(in_real_9), .in_real_10(in_real_10), .in_real_11(in_real_11),
+        .in_real_12(in_real_12), .in_real_13(in_real_13), .in_real_14(in_real_14), .in_real_15(in_real_15),
+        .in_imag_0(in_imag_0), .in_imag_1(in_imag_1), .in_imag_2(in_imag_2), .in_imag_3(in_imag_3),
+        .in_imag_4(in_imag_4), .in_imag_5(in_imag_5), .in_imag_6(in_imag_6), .in_imag_7(in_imag_7),
+        .in_imag_8(in_imag_8), .in_imag_9(in_imag_9), .in_imag_10(in_imag_10), .in_imag_11(in_imag_11),
+        .in_imag_12(in_imag_12), .in_imag_13(in_imag_13), .in_imag_14(in_imag_14), .in_imag_15(in_imag_15),
+        .out_real_0(stage1_real_0), .out_real_1(stage1_real_1), .out_real_2(stage1_real_2), .out_real_3(stage1_real_3),
+        .out_real_4(stage1_real_4), .out_real_5(stage1_real_5), .out_real_6(stage1_real_6), .out_real_7(stage1_real_7),
+        .out_real_8(stage1_real_8), .out_real_9(stage1_real_9), .out_real_10(stage1_real_10), .out_real_11(stage1_real_11),
+        .out_real_12(stage1_real_12), .out_real_13(stage1_real_13), .out_real_14(stage1_real_14), .out_real_15(stage1_real_15),
+        .out_imag_0(stage1_imag_0), .out_imag_1(stage1_imag_1), .out_imag_2(stage1_imag_2), .out_imag_3(stage1_imag_3),
+        .out_imag_4(stage1_imag_4), .out_imag_5(stage1_imag_5), .out_imag_6(stage1_imag_6), .out_imag_7(stage1_imag_7),
+        .out_imag_8(stage1_imag_8), .out_imag_9(stage1_imag_9), .out_imag_10(stage1_imag_10), .out_imag_11(stage1_imag_11),
+        .out_imag_12(stage1_imag_12), .out_imag_13(stage1_imag_13), .out_imag_14(stage1_imag_14), .out_imag_15(stage1_imag_15)
+    );
+    
+    // Stage 2
+    fft_stage2_16pt u_stage2 (
+        .clk(clk),
+        .in_real_0(stage1_real_0), .in_real_1(stage1_real_1), .in_real_2(stage1_real_2), .in_real_3(stage1_real_3),
+        .in_real_4(stage1_real_4), .in_real_5(stage1_real_5), .in_real_6(stage1_real_6), .in_real_7(stage1_real_7),
+        .in_real_8(stage1_real_8), .in_real_9(stage1_real_9), .in_real_10(stage1_real_10), .in_real_11(stage1_real_11),
+        .in_real_12(stage1_real_12), .in_real_13(stage1_real_13), .in_real_14(stage1_real_14), .in_real_15(stage1_real_15),
+        .in_imag_0(stage1_imag_0), .in_imag_1(stage1_imag_1), .in_imag_2(stage1_imag_2), .in_imag_3(stage1_imag_3),
+        .in_imag_4(stage1_imag_4), .in_imag_5(stage1_imag_5), .in_imag_6(stage1_imag_6), .in_imag_7(stage1_imag_7),
+        .in_imag_8(stage1_imag_8), .in_imag_9(stage1_imag_9), .in_imag_10(stage1_imag_10), .in_imag_11(stage1_imag_11),
+        .in_imag_12(stage1_imag_12), .in_imag_13(stage1_imag_13), .in_imag_14(stage1_imag_14), .in_imag_15(stage1_imag_15),
+        .out_real_0(stage2_real_0), .out_real_1(stage2_real_1), .out_real_2(stage2_real_2), .out_real_3(stage2_real_3),
+        .out_real_4(stage2_real_4), .out_real_5(stage2_real_5), .out_real_6(stage2_real_6), .out_real_7(stage2_real_7),
+        .out_real_8(stage2_real_8), .out_real_9(stage2_real_9), .out_real_10(stage2_real_10), .out_real_11(stage2_real_11),
+        .out_real_12(stage2_real_12), .out_real_13(stage2_real_13), .out_real_14(stage2_real_14), .out_real_15(stage2_real_15),
+        .out_imag_0(stage2_imag_0), .out_imag_1(stage2_imag_1), .out_imag_2(stage2_imag_2), .out_imag_3(stage2_imag_3),
+        .out_imag_4(stage2_imag_4), .out_imag_5(stage2_imag_5), .out_imag_6(stage2_imag_6), .out_imag_7(stage2_imag_7),
+        .out_imag_8(stage2_imag_8), .out_imag_9(stage2_imag_9), .out_imag_10(stage2_imag_10), .out_imag_11(stage2_imag_11),
+        .out_imag_12(stage2_imag_12), .out_imag_13(stage2_imag_13), .out_imag_14(stage2_imag_14), .out_imag_15(stage2_imag_15)
+    );
+    
+    // Stage 3
+    fft_stage3_16pt u_stage3 (
+        .clk(clk),
+        .in_real_0(stage2_real_0), .in_real_1(stage2_real_1), .in_real_2(stage2_real_2), .in_real_3(stage2_real_3),
+        .in_real_4(stage2_real_4), .in_real_5(stage2_real_5), .in_real_6(stage2_real_6), .in_real_7(stage2_real_7),
+        .in_real_8(stage2_real_8), .in_real_9(stage2_real_9), .in_real_10(stage2_real_10), .in_real_11(stage2_real_11),
+        .in_real_12(stage2_real_12), .in_real_13(stage2_real_13), .in_real_14(stage2_real_14), .in_real_15(stage2_real_15),
+        .in_imag_0(stage2_imag_0), .in_imag_1(stage2_imag_1), .in_imag_2(stage2_imag_2), .in_imag_3(stage2_imag_3),
+        .in_imag_4(stage2_imag_4), .in_imag_5(stage2_imag_5), .in_imag_6(stage2_imag_6), .in_imag_7(stage2_imag_7),
+        .in_imag_8(stage2_imag_8), .in_imag_9(stage2_imag_9), .in_imag_10(stage2_imag_10), .in_imag_11(stage2_imag_11),
+        .in_imag_12(stage2_imag_12), .in_imag_13(stage2_imag_13), .in_imag_14(stage2_imag_14), .in_imag_15(stage2_imag_15),
+        .out_real_0(stage3_real_0), .out_real_1(stage3_real_1), .out_real_2(stage3_real_2), .out_real_3(stage3_real_3),
+        .out_real_4(stage3_real_4), .out_real_5(stage3_real_5), .out_real_6(stage3_real_6), .out_real_7(stage3_real_7),
+        .out_real_8(stage3_real_8), .out_real_9(stage3_real_9), .out_real_10(stage3_real_10), .out_real_11(stage3_real_11),
+        .out_real_12(stage3_real_12), .out_real_13(stage3_real_13), .out_real_14(stage3_real_14), .out_real_15(stage3_real_15),
+        .out_imag_0(stage3_imag_0), .out_imag_1(stage3_imag_1), .out_imag_2(stage3_imag_2), .out_imag_3(stage3_imag_3),
+        .out_imag_4(stage3_imag_4), .out_imag_5(stage3_imag_5), .out_imag_6(stage3_imag_6), .out_imag_7(stage3_imag_7),
+        .out_imag_8(stage3_imag_8), .out_imag_9(stage3_imag_9), .out_imag_10(stage3_imag_10), .out_imag_11(stage3_imag_11),
+        .out_imag_12(stage3_imag_12), .out_imag_13(stage3_imag_13), .out_imag_14(stage3_imag_14), .out_imag_15(stage3_imag_15)
+    );
+    
+    // Stage 4
+    fft_stage4_16pt u_stage4 (
+        .clk(clk),
+        .in_real_0(stage3_real_0), .in_real_1(stage3_real_1), .in_real_2(stage3_real_2), .in_real_3(stage3_real_3),
+        .in_real_4(stage3_real_4), .in_real_5(stage3_real_5), .in_real_6(stage3_real_6), .in_real_7(stage3_real_7),
+        .in_real_8(stage3_real_8), .in_real_9(stage3_real_9), .in_real_10(stage3_real_10), .in_real_11(stage3_real_11),
+        .in_real_12(stage3_real_12), .in_real_13(stage3_real_13), .in_real_14(stage3_real_14), .in_real_15(stage3_real_15),
+        .in_imag_0(stage3_imag_0), .in_imag_1(stage3_imag_1), .in_imag_2(stage3_imag_2), .in_imag_3(stage3_imag_3),
+        .in_imag_4(stage3_imag_4), .in_imag_5(stage3_imag_5), .in_imag_6(stage3_imag_6), .in_imag_7(stage3_imag_7),
+        .in_imag_8(stage3_imag_8), .in_imag_9(stage3_imag_9), .in_imag_10(stage3_imag_10), .in_imag_11(stage3_imag_11),
+        .in_imag_12(stage3_imag_12), .in_imag_13(stage3_imag_13), .in_imag_14(stage3_imag_14), .in_imag_15(stage3_imag_15),
+        .out_real_0(stage4_real_0), .out_real_1(stage4_real_1), .out_real_2(stage4_real_2), .out_real_3(stage4_real_3),
+        .out_real_4(stage4_real_4), .out_real_5(stage4_real_5), .out_real_6(stage4_real_6), .out_real_7(stage4_real_7),
+        .out_real_8(stage4_real_8), .out_real_9(stage4_real_9), .out_real_10(stage4_real_10), .out_real_11(stage4_real_11),
+        .out_real_12(stage4_real_12), .out_real_13(stage4_real_13), .out_real_14(stage4_real_14), .out_real_15(stage4_real_15),
+        .out_imag_0(stage4_imag_0), .out_imag_1(stage4_imag_1), .out_imag_2(stage4_imag_2), .out_imag_3(stage4_imag_3),
+        .out_imag_4(stage4_imag_4), .out_imag_5(stage4_imag_5), .out_imag_6(stage4_imag_6), .out_imag_7(stage4_imag_7),
+        .out_imag_8(stage4_imag_8), .out_imag_9(stage4_imag_9), .out_imag_10(stage4_imag_10), .out_imag_11(stage4_imag_11),
+        .out_imag_12(stage4_imag_12), .out_imag_13(stage4_imag_13), .out_imag_14(stage4_imag_14), .out_imag_15(stage4_imag_15)
+    );
+    
+    // Bit reversal
+    bit_reversal_16pt u_reorder (
+        .in_real_0(stage4_real_0), .in_real_1(stage4_real_1), .in_real_2(stage4_real_2), .in_real_3(stage4_real_3),
+        .in_real_4(stage4_real_4), .in_real_5(stage4_real_5), .in_real_6(stage4_real_6), .in_real_7(stage4_real_7),
+        .in_real_8(stage4_real_8), .in_real_9(stage4_real_9), .in_real_10(stage4_real_10), .in_real_11(stage4_real_11),
+        .in_real_12(stage4_real_12), .in_real_13(stage4_real_13), .in_real_14(stage4_real_14), .in_real_15(stage4_real_15),
+        .in_imag_0(stage4_imag_0), .in_imag_1(stage4_imag_1), .in_imag_2(stage4_imag_2), .in_imag_3(stage4_imag_3),
+        .in_imag_4(stage4_imag_4), .in_imag_5(stage4_imag_5), .in_imag_6(stage4_imag_6), .in_imag_7(stage4_imag_7),
+        .in_imag_8(stage4_imag_8), .in_imag_9(stage4_imag_9), .in_imag_10(stage4_imag_10), .in_imag_11(stage4_imag_11),
+        .in_imag_12(stage4_imag_12), .in_imag_13(stage4_imag_13), .in_imag_14(stage4_imag_14), .in_imag_15(stage4_imag_15),
+        .out_real_0(reordered_real_0), .out_real_1(reordered_real_1), .out_real_2(reordered_real_2), .out_real_3(reordered_real_3),
+        .out_real_4(reordered_real_4), .out_real_5(reordered_real_5), .out_real_6(reordered_real_6), .out_real_7(reordered_real_7),
+        .out_real_8(reordered_real_8), .out_real_9(reordered_real_9), .out_real_10(reordered_real_10), .out_real_11(reordered_real_11),
+        .out_real_12(reordered_real_12), .out_real_13(reordered_real_13), .out_real_14(reordered_real_14), .out_real_15(reordered_real_15),
+        .out_imag_0(reordered_imag_0), .out_imag_1(reordered_imag_1), .out_imag_2(reordered_imag_2), .out_imag_3(reordered_imag_3),
+        .out_imag_4(reordered_imag_4), .out_imag_5(reordered_imag_5), .out_imag_6(reordered_imag_6), .out_imag_7(reordered_imag_7),
+        .out_imag_8(reordered_imag_8), .out_imag_9(reordered_imag_9), .out_imag_10(reordered_imag_10), .out_imag_11(reordered_imag_11),
+        .out_imag_12(reordered_imag_12), .out_imag_13(reordered_imag_13), .out_imag_14(reordered_imag_14), .out_imag_15(reordered_imag_15)
+    );
+    
+    // Final output registers
+    reg signed [15:0] out_reg_real_0, out_reg_real_1, out_reg_real_2, out_reg_real_3, 
+                     out_reg_real_4, out_reg_real_5, out_reg_real_6, out_reg_real_7,
+                     out_reg_real_8, out_reg_real_9, out_reg_real_10, out_reg_real_11,
+                     out_reg_real_12, out_reg_real_13, out_reg_real_14, out_reg_real_15;
+    reg signed [15:0] out_reg_imag_0, out_reg_imag_1, out_reg_imag_2, out_reg_imag_3, 
+                     out_reg_imag_4, out_reg_imag_5, out_reg_imag_6, out_reg_imag_7,
+                     out_reg_imag_8, out_reg_imag_9, out_reg_imag_10, out_reg_imag_11,
+                     out_reg_imag_12, out_reg_imag_13, out_reg_imag_14, out_reg_imag_15;
+    
+    always @(posedge clk) begin
+        out_reg_real_0 <= reordered_real_0;
+        out_reg_real_1 <= reordered_real_1;
+        out_reg_real_2 <= reordered_real_2;
+        out_reg_real_3 <= reordered_real_3;
+        out_reg_real_4 <= reordered_real_4;
+        out_reg_real_5 <= reordered_real_5;
+        out_reg_real_6 <= reordered_real_6;
+        out_reg_real_7 <= reordered_real_7;
+        out_reg_real_8 <= reordered_real_8;
+        out_reg_real_9 <= reordered_real_9;
+        out_reg_real_10 <= reordered_real_10;
+        out_reg_real_11 <= reordered_real_11;
+        out_reg_real_12 <= reordered_real_12;
+        out_reg_real_13 <= reordered_real_13;
+        out_reg_real_14 <= reordered_real_14;
+        out_reg_real_15 <= reordered_real_15;
+        
+        out_reg_imag_0 <= reordered_imag_0;
+        out_reg_imag_1 <= reordered_imag_1;
+        out_reg_imag_2 <= reordered_imag_2;
+        out_reg_imag_3 <= reordered_imag_3;
+        out_reg_imag_4 <= reordered_imag_4;
+        out_reg_imag_5 <= reordered_imag_5;
+        out_reg_imag_6 <= reordered_imag_6;
+        out_reg_imag_7 <= reordered_imag_7;
+        out_reg_imag_8 <= reordered_imag_8;
+        out_reg_imag_9 <= reordered_imag_9;
+        out_reg_imag_10 <= reordered_imag_10;
+        out_reg_imag_11 <= reordered_imag_11;
+        out_reg_imag_12 <= reordered_imag_12;
+        out_reg_imag_13 <= reordered_imag_13;
+        out_reg_imag_14 <= reordered_imag_14;
+        out_reg_imag_15 <= reordered_imag_15;
+    end
+    
+    // Assign outputs
+    assign out_real_0 = out_reg_real_0;
+    assign out_real_1 = out_reg_real_1;
+    assign out_real_2 = out_reg_real_2;
+    assign out_real_3 = out_reg_real_3;
+    assign out_real_4 = out_reg_real_4;
+    assign out_real_5 = out_reg_real_5;
+    assign out_real_6 = out_reg_real_6;
+    assign out_real_7 = out_reg_real_7;
+    assign out_real_8 = out_reg_real_8;
+    assign out_real_9 = out_reg_real_9;
+    assign out_real_10 = out_reg_real_10;
+    assign out_real_11 = out_reg_real_11;
+    assign out_real_12 = out_reg_real_12;
+    assign out_real_13 = out_reg_real_13;
+    assign out_real_14 = out_reg_real_14;
+    assign out_real_15 = out_reg_real_15;
+    
+    assign out_imag_0 = out_reg_imag_0;
+    assign out_imag_1 = out_reg_imag_1;
+    assign out_imag_2 = out_reg_imag_2;
+    assign out_imag_3 = out_reg_imag_3;
+    assign out_imag_4 = out_reg_imag_4;
+    assign out_imag_5 = out_reg_imag_5;
+    assign out_imag_6 = out_reg_imag_6;
+    assign out_imag_7 = out_reg_imag_7;
+    assign out_imag_8 = out_reg_imag_8;
+    assign out_imag_9 = out_reg_imag_9;
+    assign out_imag_10 = out_reg_imag_10;
+    assign out_imag_11 = out_reg_imag_11;
+    assign out_imag_12 = out_reg_imag_12;
+    assign out_imag_13 = out_reg_imag_13;
+    assign out_imag_14 = out_reg_imag_14;
+    assign out_imag_15 = out_reg_imag_15;
+
+endmodule
+
+// ================================================
+// Stage 1 of 16-point Radix-2 DIT FFT (No Twiddles)
+// ================================================
+
+module fft_stage1_16pt (
+    input clk,
+    input signed [15:0] in_real_0, in_real_1, in_real_2, in_real_3, 
+    in_real_4, in_real_5, in_real_6, in_real_7,
+    in_real_8, in_real_9, in_real_10, in_real_11,
+    in_real_12, in_real_13, in_real_14, in_real_15,
+    input signed [15:0] in_imag_0, in_imag_1, in_imag_2, in_imag_3, 
+    in_imag_4, in_imag_5, in_imag_6, in_imag_7,
+    in_imag_8, in_imag_9, in_imag_10, in_imag_11,
+    in_imag_12, in_imag_13, in_imag_14, in_imag_15,
+    output signed [15:0] out_real_0, out_real_1, out_real_2, out_real_3, 
+    out_real_4, out_real_5, out_real_6, out_real_7,
+    out_real_8, out_real_9, out_real_10, out_real_11,
+    out_real_12, out_real_13, out_real_14, out_real_15,
+    output signed [15:0] out_imag_0, out_imag_1, out_imag_2, out_imag_3, 
+    out_imag_4, out_imag_5, out_imag_6, out_imag_7,
+    out_imag_8, out_imag_9, out_imag_10, out_imag_11,
+    out_imag_12, out_imag_13, out_imag_14, out_imag_15
+);
+
+    reg signed [15:0] a_real_0, a_real_1, a_real_2, a_real_3, 
+                     a_real_4, a_real_5, a_real_6, a_real_7,
+                     a_real_8, a_real_9, a_real_10, a_real_11,
+                     a_real_12, a_real_13, a_real_14, a_real_15;
+    reg signed [15:0] a_imag_0, a_imag_1, a_imag_2, a_imag_3, 
+                     a_imag_4, a_imag_5, a_imag_6, a_imag_7,
+                     a_imag_8, a_imag_9, a_imag_10, a_imag_11,
+                     a_imag_12, a_imag_13, a_imag_14, a_imag_15;
+
+    always @(posedge clk) begin
+        // Butterfly operations for first 8 points
+        a_real_0 <= in_real_0 + in_real_8;
+        a_imag_0 <= in_imag_0 + in_imag_8;
+        a_real_8 <= in_real_0 - in_real_8;
+        a_imag_8 <= in_imag_0 - in_imag_8;
+        
+        a_real_1 <= in_real_1 + in_real_9;
+        a_imag_1 <= in_imag_1 + in_imag_9;
+        a_real_9 <= in_real_1 - in_real_9;
+        a_imag_9 <= in_imag_1 - in_imag_9;
+        
+        a_real_2 <= in_real_2 + in_real_10;
+        a_imag_2 <= in_imag_2 + in_imag_10;
+        a_real_10 <= in_real_2 - in_real_10;
+        a_imag_10 <= in_imag_2 - in_imag_10;
+        
+        a_real_3 <= in_real_3 + in_real_11;
+        a_imag_3 <= in_imag_3 + in_imag_11;
+        a_real_11 <= in_real_3 - in_real_11;
+        a_imag_11 <= in_imag_3 - in_imag_11;
+        
+        a_real_4 <= in_real_4 + in_real_12;
+        a_imag_4 <= in_imag_4 + in_imag_12;
+        a_real_12 <= in_real_4 - in_real_12;
+        a_imag_12 <= in_imag_4 - in_imag_12;
+        
+        a_real_5 <= in_real_5 + in_real_13;
+        a_imag_5 <= in_imag_5 + in_imag_13;
+        a_real_13 <= in_real_5 - in_real_13;
+        a_imag_13 <= in_imag_5 - in_imag_13;
+        
+        a_real_6 <= in_real_6 + in_real_14;
+        a_imag_6 <= in_imag_6 + in_imag_14;
+        a_real_14 <= in_real_6 - in_real_14;
+        a_imag_14 <= in_imag_6 - in_imag_14;
+        
+        a_real_7 <= in_real_7 + in_real_15;
+        a_imag_7 <= in_imag_7 + in_imag_15;
+        a_real_15 <= in_real_7 - in_real_15;
+        a_imag_15 <= in_imag_7 - in_imag_15;
+    end
+
+    // Assign outputs
+    assign out_real_0 = a_real_0;
+    assign out_real_1 = a_real_1;
+    assign out_real_2 = a_real_2;
+    assign out_real_3 = a_real_3;
+    assign out_real_4 = a_real_4;
+    assign out_real_5 = a_real_5;
+    assign out_real_6 = a_real_6;
+    assign out_real_7 = a_real_7;
+    assign out_real_8 = a_real_8;
+    assign out_real_9 = a_real_9;
+    assign out_real_10 = a_real_10;
+    assign out_real_11 = a_real_11;
+    assign out_real_12 = a_real_12;
+    assign out_real_13 = a_real_13;
+    assign out_real_14 = a_real_14;
+    assign out_real_15 = a_real_15;
+    
+    assign out_imag_0 = a_imag_0;
+    assign out_imag_1 = a_imag_1;
+    assign out_imag_2 = a_imag_2;
+    assign out_imag_3 = a_imag_3;
+    assign out_imag_4 = a_imag_4;
+    assign out_imag_5 = a_imag_5;
+    assign out_imag_6 = a_imag_6;
+    assign out_imag_7 = a_imag_7;
+    assign out_imag_8 = a_imag_8;
+    assign out_imag_9 = a_imag_9;
+    assign out_imag_10 = a_imag_10;
+    assign out_imag_11 = a_imag_11;
+    assign out_imag_12 = a_imag_12;
+    assign out_imag_13 = a_imag_13;
+    assign out_imag_14 = a_imag_14;
+    assign out_imag_15 = a_imag_15;
+
+endmodule
+
+// ==========================================================
+// Stage 2 of 16-point Radix-2 DIT FFT (Twiddle W_N^0, W_N^2, ...)
+// ==========================================================
+
+module fft_stage2_16pt (
+    input clk,
+    input signed [15:0] in_real_0, in_real_1, in_real_2, in_real_3, 
+    in_real_4, in_real_5, in_real_6, in_real_7,
+    in_real_8, in_real_9, in_real_10, in_real_11,
+    in_real_12, in_real_13, in_real_14, in_real_15,
+    input signed [15:0] in_imag_0, in_imag_1, in_imag_2, in_imag_3, 
+    in_imag_4, in_imag_5, in_imag_6, in_imag_7,
+    in_imag_8, in_imag_9, in_imag_10, in_imag_11,
+    in_imag_12, in_imag_13, in_imag_14, in_imag_15,
+    output signed [15:0] out_real_0, out_real_1, out_real_2, out_real_3, 
+    out_real_4, out_real_5, out_real_6, out_real_7,
+    out_real_8, out_real_9, out_real_10, out_real_11,
+    out_real_12, out_real_13, out_real_14, out_real_15,
+    output signed [15:0] out_imag_0, out_imag_1, out_imag_2, out_imag_3, 
+    out_imag_4, out_imag_5, out_imag_6, out_imag_7,
+    out_imag_8, out_imag_9, out_imag_10, out_imag_11,
+    out_imag_12, out_imag_13, out_imag_14, out_imag_15
+);
+
+    // Twiddle factors (W_16^k, k=0..7)
+    wire signed [15:0] tw_real_0 = 32767;  wire signed [15:0] tw_imag_0 = 0;
+    wire signed [15:0] tw_real_1 = 30273;  wire signed [15:0] tw_imag_1 = -12539;
+    wire signed [15:0] tw_real_2 = 23170;  wire signed [15:0] tw_imag_2 = -23170;
+    wire signed [15:0] tw_real_3 = 12539;  wire signed [15:0] tw_imag_3 = -30273;
+    wire signed [15:0] tw_real_4 = 0;      wire signed [15:0] tw_imag_4 = -32768;
+    wire signed [15:0] tw_real_5 = -12539; wire signed [15:0] tw_imag_5 = -30273;
+    wire signed [15:0] tw_real_6 = -23170; wire signed [15:0] tw_imag_6 = -23170;
+    wire signed [15:0] tw_real_7 = -30273; wire signed [15:0] tw_imag_7 = -12539;
+
+    // Butterfly outputs
+    reg signed [15:0] bf_a_real_0, bf_a_real_1, bf_a_real_2, bf_a_real_3, 
+                     bf_a_real_4, bf_a_real_5, bf_a_real_6, bf_a_real_7;
+    reg signed [15:0] bf_a_imag_0, bf_a_imag_1, bf_a_imag_2, bf_a_imag_3, 
+                     bf_a_imag_4, bf_a_imag_5, bf_a_imag_6, bf_a_imag_7;
+    reg signed [15:0] bf_b_real_0, bf_b_real_1, bf_b_real_2, bf_b_real_3, 
+                     bf_b_real_4, bf_b_real_5, bf_b_real_6, bf_b_real_7;
+    reg signed [15:0] bf_b_imag_0, bf_b_imag_1, bf_b_imag_2, bf_b_imag_3, 
+                     bf_b_imag_4, bf_b_imag_5, bf_b_imag_6, bf_b_imag_7;
+    
+    // Twiddle multiplication outputs
+    wire signed [15:0] tw_b_real_0, tw_b_real_1, tw_b_real_2, tw_b_real_3, 
+                      tw_b_real_4, tw_b_real_5, tw_b_real_6, tw_b_real_7;
+    wire signed [15:0] tw_b_imag_0, tw_b_imag_1, tw_b_imag_2, tw_b_imag_3, 
+                      tw_b_imag_4, tw_b_imag_5, tw_b_imag_6, tw_b_imag_7;
+    
+    // Output registers
+    reg signed [15:0] out_reg_real_0, out_reg_real_1, out_reg_real_2, out_reg_real_3, 
+                     out_reg_real_4, out_reg_real_5, out_reg_real_6, out_reg_real_7,
+                     out_reg_real_8, out_reg_real_9, out_reg_real_10, out_reg_real_11,
+                     out_reg_real_12, out_reg_real_13, out_reg_real_14, out_reg_real_15;
+    reg signed [15:0] out_reg_imag_0, out_reg_imag_1, out_reg_imag_2, out_reg_imag_3, 
+                     out_reg_imag_4, out_reg_imag_5, out_reg_imag_6, out_reg_imag_7,
+                     out_reg_imag_8, out_reg_imag_9, out_reg_imag_10, out_reg_imag_11,
+                     out_reg_imag_12, out_reg_imag_13, out_reg_imag_14, out_reg_imag_15;
+
+    // Butterfly computations
+    always @(posedge clk) begin
+        // First 8 butterflies (A paths)
+        bf_a_real_0 <= in_real_0 + in_real_8;
+        bf_a_imag_0 <= in_imag_0 + in_imag_8;
+        bf_b_real_0 <= in_real_0 - in_real_8;
+        bf_b_imag_0 <= in_imag_0 - in_imag_8;
+        
+        bf_a_real_1 <= in_real_1 + in_real_9;
+        bf_a_imag_1 <= in_imag_1 + in_imag_9;
+        bf_b_real_1 <= in_real_1 - in_real_9;
+        bf_b_imag_1 <= in_imag_1 - in_imag_9;
+        
+        bf_a_real_2 <= in_real_2 + in_real_10;
+        bf_a_imag_2 <= in_imag_2 + in_imag_10;
+        bf_b_real_2 <= in_real_2 - in_real_10;
+        bf_b_imag_2 <= in_imag_2 - in_imag_10;
+        
+        bf_a_real_3 <= in_real_3 + in_real_11;
+        bf_a_imag_3 <= in_imag_3 + in_imag_11;
+        bf_b_real_3 <= in_real_3 - in_real_11;
+        bf_b_imag_3 <= in_imag_3 - in_imag_11;
+        
+        bf_a_real_4 <= in_real_4 + in_real_12;
+        bf_a_imag_4 <= in_imag_4 + in_imag_12;
+        bf_b_real_4 <= in_real_4 - in_real_12;
+        bf_b_imag_4 <= in_imag_4 - in_imag_12;
+        
+        bf_a_real_5 <= in_real_5 + in_real_13;
+        bf_a_imag_5 <= in_imag_5 + in_imag_13;
+        bf_b_real_5 <= in_real_5 - in_real_13;
+        bf_b_imag_5 <= in_imag_5 - in_imag_13;
+        
+        bf_a_real_6 <= in_real_6 + in_real_14;
+        bf_a_imag_6 <= in_imag_6 + in_imag_14;
+        bf_b_real_6 <= in_real_6 - in_real_14;
+        bf_b_imag_6 <= in_imag_6 - in_imag_14;
+        
+        bf_a_real_7 <= in_real_7 + in_real_15;
+        bf_a_imag_7 <= in_imag_7 + in_imag_15;
+        bf_b_real_7 <= in_real_7 - in_real_15;
+        bf_b_imag_7 <= in_imag_7 - in_imag_15;
+    end
+    
+    // Twiddle multiplications (combinational)
+    vedic_complex_mult mult_0 (.a_real(bf_b_real_0), .a_imag(bf_b_imag_0), .b_real(tw_real_0), .b_imag(tw_imag_0), .p_real(tw_b_real_0), .p_imag(tw_b_imag_0));
+    vedic_complex_mult mult_1 (.a_real(bf_b_real_1), .a_imag(bf_b_imag_1), .b_real(tw_real_1), .b_imag(tw_imag_1), .p_real(tw_b_real_1), .p_imag(tw_b_imag_1));
+    vedic_complex_mult mult_2 (.a_real(bf_b_real_2), .a_imag(bf_b_imag_2), .b_real(tw_real_2), .b_imag(tw_imag_2), .p_real(tw_b_real_2), .p_imag(tw_b_imag_2));
+    vedic_complex_mult mult_3 (.a_real(bf_b_real_3), .a_imag(bf_b_imag_3), .b_real(tw_real_3), .b_imag(tw_imag_3), .p_real(tw_b_real_3), .p_imag(tw_b_imag_3));
+    vedic_complex_mult mult_4 (.a_real(bf_b_real_4), .a_imag(bf_b_imag_4), .b_real(tw_real_4), .b_imag(tw_imag_4), .p_real(tw_b_real_4), .p_imag(tw_b_imag_4));
+    vedic_complex_mult mult_5 (.a_real(bf_b_real_5), .a_imag(bf_b_imag_5), .b_real(tw_real_5), .b_imag(tw_imag_5), .p_real(tw_b_real_5), .p_imag(tw_b_imag_5));
+    vedic_complex_mult mult_6 (.a_real(bf_b_real_6), .a_imag(bf_b_imag_6), .b_real(tw_real_6), .b_imag(tw_imag_6), .p_real(tw_b_real_6), .p_imag(tw_b_imag_6));
+    vedic_complex_mult mult_7 (.a_real(bf_b_real_7), .a_imag(bf_b_imag_7), .b_real(tw_real_7), .b_imag(tw_imag_7), .p_real(tw_b_real_7), .p_imag(tw_b_imag_7));
+    
+    // Output assignment
+    always @(posedge clk) begin
+        // First 8 outputs (A paths)
+        out_reg_real_0 <= bf_a_real_0;
+        out_reg_imag_0 <= bf_a_imag_0;
+        out_reg_real_1 <= bf_a_real_1;
+        out_reg_imag_1 <= bf_a_imag_1;
+        out_reg_real_2 <= bf_a_real_2;
+        out_reg_imag_2 <= bf_a_imag_2;
+        out_reg_real_3 <= bf_a_real_3;
+        out_reg_imag_3 <= bf_a_imag_3;
+        out_reg_real_4 <= bf_a_real_4;
+        out_reg_imag_4 <= bf_a_imag_4;
+        out_reg_real_5 <= bf_a_real_5;
+        out_reg_imag_5 <= bf_a_imag_5;
+        out_reg_real_6 <= bf_a_real_6;
+        out_reg_imag_6 <= bf_a_imag_6;
+        out_reg_real_7 <= bf_a_real_7;
+        out_reg_imag_7 <= bf_a_imag_7;
+        
+        // Last 8 outputs (B paths after twiddle)
+        out_reg_real_8 <= tw_b_real_0;
+        out_reg_imag_8 <= tw_b_imag_0;
+        out_reg_real_9 <= tw_b_real_1;
+        out_reg_imag_9 <= tw_b_imag_1;
+        out_reg_real_10 <= tw_b_real_2;
+        out_reg_imag_10 <= tw_b_imag_2;
+        out_reg_real_11 <= tw_b_real_3;
+        out_reg_imag_11 <= tw_b_imag_3;
+        out_reg_real_12 <= tw_b_real_4;
+        out_reg_imag_12 <= tw_b_imag_4;
+        out_reg_real_13 <= tw_b_real_5;
+        out_reg_imag_13 <= tw_b_imag_5;
+        out_reg_real_14 <= tw_b_real_6;
+        out_reg_imag_14 <= tw_b_imag_6;
+        out_reg_real_15 <= tw_b_real_7;
+        out_reg_imag_15 <= tw_b_imag_7;
+    end
+
+    // Assign outputs
+    assign out_real_0 = out_reg_real_0;
+    assign out_real_1 = out_reg_real_1;
+    assign out_real_2 = out_reg_real_2;
+    assign out_real_3 = out_reg_real_3;
+    assign out_real_4 = out_reg_real_4;
+    assign out_real_5 = out_reg_real_5;
+    assign out_real_6 = out_reg_real_6;
+    assign out_real_7 = out_reg_real_7;
+    assign out_real_8 = out_reg_real_8;
+    assign out_real_9 = out_reg_real_9;
+    assign out_real_10 = out_reg_real_10;
+    assign out_real_11 = out_reg_real_11;
+    assign out_real_12 = out_reg_real_12;
+    assign out_real_13 = out_reg_real_13;
+    assign out_real_14 = out_reg_real_14;
+    assign out_real_15 = out_reg_real_15;
+    
+    assign out_imag_0 = out_reg_imag_0;
+    assign out_imag_1 = out_reg_imag_1;
+    assign out_imag_2 = out_reg_imag_2;
+    assign out_imag_3 = out_reg_imag_3;
+    assign out_imag_4 = out_reg_imag_4;
+    assign out_imag_5 = out_reg_imag_5;
+    assign out_imag_6 = out_reg_imag_6;
+    assign out_imag_7 = out_reg_imag_7;
+    assign out_imag_8 = out_reg_imag_8;
+    assign out_imag_9 = out_reg_imag_9;
+    assign out_imag_10 = out_reg_imag_10;
+    assign out_imag_11 = out_reg_imag_11;
+    assign out_imag_12 = out_reg_imag_12;
+    assign out_imag_13 = out_reg_imag_13;
+    assign out_imag_14 = out_reg_imag_14;
+    assign out_imag_15 = out_reg_imag_15;
+
+endmodule
+
+// ==========================================================
+// Stage 3 of 16-point Radix-2 DIT FFT (Twiddle W_N^0 to W_N^7, repeated)
+// ==========================================================
+
+module fft_stage3_16pt (
+    input clk,
+    input signed [15:0] in_real_0, in_real_1, in_real_2, in_real_3, 
+    in_real_4, in_real_5, in_real_6, in_real_7,
+    in_real_8, in_real_9, in_real_10, in_real_11,
+    in_real_12, in_real_13, in_real_14, in_real_15,
+    input signed [15:0] in_imag_0, in_imag_1, in_imag_2, in_imag_3, 
+    in_imag_4, in_imag_5, in_imag_6, in_imag_7,
+    in_imag_8, in_imag_9, in_imag_10, in_imag_11,
+    in_imag_12, in_imag_13, in_imag_14, in_imag_15,
+    output signed [15:0] out_real_0, out_real_1, out_real_2, out_real_3, 
+    out_real_4, out_real_5, out_real_6, out_real_7,
+    out_real_8, out_real_9, out_real_10, out_real_11,
+    out_real_12, out_real_13, out_real_14, out_real_15,
+    output signed [15:0] out_imag_0, out_imag_1, out_imag_2, out_imag_3, 
+    out_imag_4, out_imag_5, out_imag_6, out_imag_7,
+    out_imag_8, out_imag_9, out_imag_10, out_imag_11,
+    out_imag_12, out_imag_13, out_imag_14, out_imag_15
+);
+
+    // Twiddle factors (W_16^k, k=0..7)
+    wire signed [15:0] tw_real_0 = 32767;  wire signed [15:0] tw_imag_0 = 0;
+    wire signed [15:0] tw_real_1 = 30274;  wire signed [15:0] tw_imag_1 = -12539;
+    wire signed [15:0] tw_real_2 = 23170;  wire signed [15:0] tw_imag_2 = -23170;
+    wire signed [15:0] tw_real_3 = 12539;  wire signed [15:0] tw_imag_3 = -30274;
+    wire signed [15:0] tw_real_4 = 0;      wire signed [15:0] tw_imag_4 = -32768;
+    wire signed [15:0] tw_real_5 = -12539; wire signed [15:0] tw_imag_5 = -30274;
+    wire signed [15:0] tw_real_6 = -23170; wire signed [15:0] tw_imag_6 = -23170;
+    wire signed [15:0] tw_real_7 = -30274; wire signed [15:0] tw_imag_7 = -12539;
+
+    // Butterfly outputs
+    reg signed [15:0] bf_a_real_0, bf_a_real_1, bf_a_real_2, bf_a_real_3, 
+                     bf_a_real_4, bf_a_real_5, bf_a_real_6, bf_a_real_7;
+    reg signed [15:0] bf_a_imag_0, bf_a_imag_1, bf_a_imag_2, bf_a_imag_3, 
+                     bf_a_imag_4, bf_a_imag_5, bf_a_imag_6, bf_a_imag_7;
+    reg signed [15:0] bf_b_real_0, bf_b_real_1, bf_b_real_2, bf_b_real_3, 
+                     bf_b_real_4, bf_b_real_5, bf_b_real_6, bf_b_real_7;
+    reg signed [15:0] bf_b_imag_0, bf_b_imag_1, bf_b_imag_2, bf_b_imag_3, 
+                     bf_b_imag_4, bf_b_imag_5, bf_b_imag_6, bf_b_imag_7;
+    
+    // Twiddle multiplication outputs
+    wire signed [15:0] tw_b_real_0, tw_b_real_1, tw_b_real_2, tw_b_real_3, 
+                      tw_b_real_4, tw_b_real_5, tw_b_real_6, tw_b_real_7;
+    wire signed [15:0] tw_b_imag_0, tw_b_imag_1, tw_b_imag_2, tw_b_imag_3, 
+                      tw_b_imag_4, tw_b_imag_5, tw_b_imag_6, tw_b_imag_7;
+    
+    // Output registers
+    reg signed [15:0] out_reg_real_0, out_reg_real_1, out_reg_real_2, out_reg_real_3, 
+                     out_reg_real_4, out_reg_real_5, out_reg_real_6, out_reg_real_7,
+                     out_reg_real_8, out_reg_real_9, out_reg_real_10, out_reg_real_11,
+                     out_reg_real_12, out_reg_real_13, out_reg_real_14, out_reg_real_15;
+    reg signed [15:0] out_reg_imag_0, out_reg_imag_1, out_reg_imag_2, out_reg_imag_3, 
+                     out_reg_imag_4, out_reg_imag_5, out_reg_imag_6, out_reg_imag_7,
+                     out_reg_imag_8, out_reg_imag_9, out_reg_imag_10, out_reg_imag_11,
+                     out_reg_imag_12, out_reg_imag_13, out_reg_imag_14, out_reg_imag_15;
+
+    // Butterfly computations
+    always @(posedge clk) begin
+        // Butterfly operations for even/odd pairs
+        bf_a_real_0 <= in_real_0 + in_real_1;
+        bf_a_imag_0 <= in_imag_0 + in_imag_1;
+        bf_b_real_0 <= in_real_0 - in_real_1;
+        bf_b_imag_0 <= in_imag_0 - in_imag_1;
+        
+        bf_a_real_1 <= in_real_2 + in_real_3;
+        bf_a_imag_1 <= in_imag_2 + in_imag_3;
+        bf_b_real_1 <= in_real_2 - in_real_3;
+        bf_b_imag_1 <= in_imag_2 - in_imag_3;
+        
+        bf_a_real_2 <= in_real_4 + in_real_5;
+        bf_a_imag_2 <= in_imag_4 + in_imag_5;
+        bf_b_real_2 <= in_real_4 - in_real_5;
+        bf_b_imag_2 <= in_imag_4 - in_imag_5;
+        
+        bf_a_real_3 <= in_real_6 + in_real_7;
+        bf_a_imag_3 <= in_imag_6 + in_imag_7;
+        bf_b_real_3 <= in_real_6 - in_real_7;
+        bf_b_imag_3 <= in_imag_6 - in_imag_7;
+        
+        bf_a_real_4 <= in_real_8 + in_real_9;
+        bf_a_imag_4 <= in_imag_8 + in_imag_9;
+        bf_b_real_4 <= in_real_8 - in_real_9;
+        bf_b_imag_4 <= in_imag_8 - in_imag_9;
+        
+        bf_a_real_5 <= in_real_10 + in_real_11;
+        bf_a_imag_5 <= in_imag_10 + in_imag_11;
+        bf_b_real_5 <= in_real_10 - in_real_11;
+        bf_b_imag_5 <= in_imag_10 - in_imag_11;
+        
+        bf_a_real_6 <= in_real_12 + in_real_13;
+        bf_a_imag_6 <= in_imag_12 + in_imag_13;
+        bf_b_real_6 <= in_real_12 - in_real_13;
+        bf_b_imag_6 <= in_imag_12 - in_imag_13;
+        
+        bf_a_real_7 <= in_real_14 + in_real_15;
+        bf_a_imag_7 <= in_imag_14 + in_imag_15;
+        bf_b_real_7 <= in_real_14 - in_real_15;
+        bf_b_imag_7 <= in_imag_14 - in_imag_15;
+    end
+    
+    // Twiddle multiplications (combinational)
+    vedic_complex_mult tw_mult_0 (.a_real(bf_b_real_0), .a_imag(bf_b_imag_0), .b_real(tw_real_0), .b_imag(tw_imag_0), .p_real(tw_b_real_0), .p_imag(tw_b_imag_0));
+    vedic_complex_mult tw_mult_1 (.a_real(bf_b_real_1), .a_imag(bf_b_imag_1), .b_real(tw_real_1), .b_imag(tw_imag_1), .p_real(tw_b_real_1), .p_imag(tw_b_imag_1));
+    vedic_complex_mult tw_mult_2 (.a_real(bf_b_real_2), .a_imag(bf_b_imag_2), .b_real(tw_real_2), .b_imag(tw_imag_2), .p_real(tw_b_real_2), .p_imag(tw_b_imag_2));
+    vedic_complex_mult tw_mult_3 (.a_real(bf_b_real_3), .a_imag(bf_b_imag_3), .b_real(tw_real_3), .b_imag(tw_imag_3), .p_real(tw_b_real_3), .p_imag(tw_b_imag_3));
+    vedic_complex_mult tw_mult_4 (.a_real(bf_b_real_4), .a_imag(bf_b_imag_4), .b_real(tw_real_4), .b_imag(tw_imag_4), .p_real(tw_b_real_4), .p_imag(tw_b_imag_4));
+    vedic_complex_mult tw_mult_5 (.a_real(bf_b_real_5), .a_imag(bf_b_imag_5), .b_real(tw_real_5), .b_imag(tw_imag_5), .p_real(tw_b_real_5), .p_imag(tw_b_imag_5));
+    vedic_complex_mult tw_mult_6 (.a_real(bf_b_real_6), .a_imag(bf_b_imag_6), .b_real(tw_real_6), .b_imag(tw_imag_6), .p_real(tw_b_real_6), .p_imag(tw_b_imag_6));
+    vedic_complex_mult tw_mult_7 (.a_real(bf_b_real_7), .a_imag(bf_b_imag_7), .b_real(tw_real_7), .b_imag(tw_imag_7), .p_real(tw_b_real_7), .p_imag(tw_b_imag_7));
+    
+    // Output assignment
+    always @(posedge clk) begin
+        // Even outputs (A paths)
+        out_reg_real_0 <= bf_a_real_0;
+        out_reg_imag_0 <= bf_a_imag_0;
+        out_reg_real_2 <= bf_a_real_1;
+        out_reg_imag_2 <= bf_a_imag_1;
+        out_reg_real_4 <= bf_a_real_2;
+        out_reg_imag_4 <= bf_a_imag_2;
+        out_reg_real_6 <= bf_a_real_3;
+        out_reg_imag_6 <= bf_a_imag_3;
+        out_reg_real_8 <= bf_a_real_4;
+        out_reg_imag_8 <= bf_a_imag_4;
+        out_reg_real_10 <= bf_a_real_5;
+        out_reg_imag_10 <= bf_a_imag_5;
+        out_reg_real_12 <= bf_a_real_6;
+        out_reg_imag_12 <= bf_a_imag_6;
+        out_reg_real_14 <= bf_a_real_7;
+        out_reg_imag_14 <= bf_a_imag_7;
+        
+        // Odd outputs (B paths after twiddle)
+        out_reg_real_1 <= tw_b_real_0;
+        out_reg_imag_1 <= tw_b_imag_0;
+        out_reg_real_3 <= tw_b_real_1;
+        out_reg_imag_3 <= tw_b_imag_1;
+        out_reg_real_5 <= tw_b_real_2;
+        out_reg_imag_5 <= tw_b_imag_2;
+        out_reg_real_7 <= tw_b_real_3;
+        out_reg_imag_7 <= tw_b_imag_3;
+        out_reg_real_9 <= tw_b_real_4;
+        out_reg_imag_9 <= tw_b_imag_4;
+        out_reg_real_11 <= tw_b_real_5;
+        out_reg_imag_11 <= tw_b_imag_5;
+        out_reg_real_13 <= tw_b_real_6;
+        out_reg_imag_13 <= tw_b_imag_6;
+        out_reg_real_15 <= tw_b_real_7;
+        out_reg_imag_15 <= tw_b_imag_7;
+    end
+
+    // Assign outputs
+    assign out_real_0 = out_reg_real_0;
+    assign out_real_1 = out_reg_real_1;
+    assign out_real_2 = out_reg_real_2;
+    assign out_real_3 = out_reg_real_3;
+    assign out_real_4 = out_reg_real_4;
+    assign out_real_5 = out_reg_real_5;
+    assign out_real_6 = out_reg_real_6;
+    assign out_real_7 = out_reg_real_7;
+    assign out_real_8 = out_reg_real_8;
+    assign out_real_9 = out_reg_real_9;
+    assign out_real_10 = out_reg_real_10;
+    assign out_real_11 = out_reg_real_11;
+    assign out_real_12 = out_reg_real_12;
+    assign out_real_13 = out_reg_real_13;
+    assign out_real_14 = out_reg_real_14;
+    assign out_real_15 = out_reg_real_15;
+    
+    assign out_imag_0 = out_reg_imag_0;
+    assign out_imag_1 = out_reg_imag_1;
+    assign out_imag_2 = out_reg_imag_2;
+    assign out_imag_3 = out_reg_imag_3;
+    assign out_imag_4 = out_reg_imag_4;
+    assign out_imag_5 = out_reg_imag_5;
+    assign out_imag_6 = out_reg_imag_6;
+    assign out_imag_7 = out_reg_imag_7;
+    assign out_imag_8 = out_reg_imag_8;
+    assign out_imag_9 = out_reg_imag_9;
+    assign out_imag_10 = out_reg_imag_10;
+    assign out_imag_11 = out_reg_imag_11;
+    assign out_imag_12 = out_reg_imag_12;
+    assign out_imag_13 = out_reg_imag_13;
+    assign out_imag_14 = out_reg_imag_14;
+    assign out_imag_15 = out_reg_imag_15;
+
+endmodule
+
+// ==========================================================
+// Stage 4 of 16-point Radix-2 DIT FFT (Final 2-point butterflies)
+// ==========================================================
+
+module fft_stage4_16pt (
+    input clk,
+    input signed [15:0] in_real_0, in_real_1, in_real_2, in_real_3, 
+    in_real_4, in_real_5, in_real_6, in_real_7,
+    in_real_8, in_real_9, in_real_10, in_real_11,
+    in_real_12, in_real_13, in_real_14, in_real_15,
+    input signed [15:0] in_imag_0, in_imag_1, in_imag_2, in_imag_3, 
+    in_imag_4, in_imag_5, in_imag_6, in_imag_7,
+    in_imag_8, in_imag_9, in_imag_10, in_imag_11,
+    in_imag_12, in_imag_13, in_imag_14, in_imag_15,
+    output signed [15:0] out_real_0, out_real_1, out_real_2, out_real_3, 
+    out_real_4, out_real_5, out_real_6, out_real_7,
+    out_real_8, out_real_9, out_real_10, out_real_11,
+    out_real_12, out_real_13, out_real_14, out_real_15,
+    output signed [15:0] out_imag_0, out_imag_1, out_imag_2, out_imag_3, 
+    out_imag_4, out_imag_5, out_imag_6, out_imag_7,
+    out_imag_8, out_imag_9, out_imag_10, out_imag_11,
+    out_imag_12, out_imag_13, out_imag_14, out_imag_15
+);
+
+    // Temporary registers
+    reg signed [15:0] temp_real_0, temp_real_1, temp_real_2, temp_real_3, 
+                     temp_real_4, temp_real_5, temp_real_6, temp_real_7,
+                     temp_real_8, temp_real_9, temp_real_10, temp_real_11,
+                     temp_real_12, temp_real_13, temp_real_14, temp_real_15;
+    reg signed [15:0] temp_imag_0, temp_imag_1, temp_imag_2, temp_imag_3, 
+                     temp_imag_4, temp_imag_5, temp_imag_6, temp_imag_7,
+                     temp_imag_8, temp_imag_9, temp_imag_10, temp_imag_11,
+                     temp_imag_12, temp_imag_13, temp_imag_14, temp_imag_15;
+    
+    // Output registers
+    reg signed [15:0] out_reg_real_0, out_reg_real_1, out_reg_real_2, out_reg_real_3, 
+                     out_reg_real_4, out_reg_real_5, out_reg_real_6, out_reg_real_7,
+                     out_reg_real_8, out_reg_real_9, out_reg_real_10, out_reg_real_11,
+                     out_reg_real_12, out_reg_real_13, out_reg_real_14, out_reg_real_15;
+    reg signed [15:0] out_reg_imag_0, out_reg_imag_1, out_reg_imag_2, out_reg_imag_3, 
+                     out_reg_imag_4, out_reg_imag_5, out_reg_imag_6, out_reg_imag_7,
+                     out_reg_imag_8, out_reg_imag_9, out_reg_imag_10, out_reg_imag_11,
+                     out_reg_imag_12, out_reg_imag_13, out_reg_imag_14, out_reg_imag_15;
+
+    // Butterfly computations
+    always @(posedge clk) begin
+        // Butterfly operations for adjacent pairs
+        temp_real_0 <= in_real_0 + in_real_1;
+        temp_imag_0 <= in_imag_0 + in_imag_1;
+        temp_real_1 <= in_real_0 - in_real_1;
+        temp_imag_1 <= in_imag_0 - in_imag_1;
+        
+        temp_real_2 <= in_real_2 + in_real_3;
+        temp_imag_2 <= in_imag_2 + in_imag_3;
+        temp_real_3 <= in_real_2 - in_real_3;
+        temp_imag_3 <= in_imag_2 - in_imag_3;
+        
+        temp_real_4 <= in_real_4 + in_real_5;
+        temp_imag_4 <= in_imag_4 + in_imag_5;
+        temp_real_5 <= in_real_4 - in_real_5;
+        temp_imag_5 <= in_imag_4 - in_imag_5;
+        
+        temp_real_6 <= in_real_6 + in_real_7;
+        temp_imag_6 <= in_imag_6 + in_imag_7;
+        temp_real_7 <= in_real_6 - in_real_7;
+        temp_imag_7 <= in_imag_6 - in_imag_7;
+        
+        temp_real_8 <= in_real_8 + in_real_9;
+        temp_imag_8 <= in_imag_8 + in_imag_9;
+        temp_real_9 <= in_real_8 - in_real_9;
+        temp_imag_9 <= in_imag_8 - in_imag_9;
+        
+        temp_real_10 <= in_real_10 + in_real_11;
+        temp_imag_10 <= in_imag_10 + in_imag_11;
+        temp_real_11 <= in_real_10 - in_real_11;
+        temp_imag_11 <= in_imag_10 - in_imag_11;
+        
+        temp_real_12 <= in_real_12 + in_real_13;
+        temp_imag_12 <= in_imag_12 + in_imag_13;
+        temp_real_13 <= in_real_12 - in_real_13;
+        temp_imag_13 <= in_imag_12 - in_imag_13;
+        
+        temp_real_14 <= in_real_14 + in_real_15;
+        temp_imag_14 <= in_imag_14 + in_imag_15;
+        temp_real_15 <= in_real_14 - in_real_15;
+        temp_imag_15 <= in_imag_14 - in_imag_15;
+    end
+    
+    // Output registration
+    always @(posedge clk) begin
+        out_reg_real_0 <= temp_real_0;
+        out_reg_imag_0 <= temp_imag_0;
+        out_reg_real_1 <= temp_real_1;
+        out_reg_imag_1 <= temp_imag_1;
+        out_reg_real_2 <= temp_real_2;
+        out_reg_imag_2 <= temp_imag_2;
+        out_reg_real_3 <= temp_real_3;
+        out_reg_imag_3 <= temp_imag_3;
+        out_reg_real_4 <= temp_real_4;
+        out_reg_imag_4 <= temp_imag_4;
+        out_reg_real_5 <= temp_real_5;
+        out_reg_imag_5 <= temp_imag_5;
+        out_reg_real_6 <= temp_real_6;
+        out_reg_imag_6 <= temp_imag_6;
+        out_reg_real_7 <= temp_real_7;
+        out_reg_imag_7 <= temp_imag_7;
+        out_reg_real_8 <= temp_real_8;
+        out_reg_imag_8 <= temp_imag_8;
+        out_reg_real_9 <= temp_real_9;
+        out_reg_imag_9 <= temp_imag_9;
+        out_reg_real_10 <= temp_real_10;
+        out_reg_imag_10 <= temp_imag_10;
+        out_reg_real_11 <= temp_real_11;
+        out_reg_imag_11 <= temp_imag_11;
+        out_reg_real_12 <= temp_real_12;
+        out_reg_imag_12 <= temp_imag_12;
+        out_reg_real_13 <= temp_real_13;
+        out_reg_imag_13 <= temp_imag_13;
+        out_reg_real_14 <= temp_real_14;
+        out_reg_imag_14 <= temp_imag_14;
+        out_reg_real_15 <= temp_real_15;
+        out_reg_imag_15 <= temp_imag_15;
+    end
+
+    // Assign outputs
+    assign out_real_0 = out_reg_real_0;
+    assign out_real_1 = out_reg_real_1;
+    assign out_real_2 = out_reg_real_2;
+    assign out_real_3 = out_reg_real_3;
+    assign out_real_4 = out_reg_real_4;
+    assign out_real_5 = out_reg_real_5;
+    assign out_real_6 = out_reg_real_6;
+    assign out_real_7 = out_reg_real_7;
+    assign out_real_8 = out_reg_real_8;
+    assign out_real_9 = out_reg_real_9;
+    assign out_real_10 = out_reg_real_10;
+    assign out_real_11 = out_reg_real_11;
+    assign out_real_12 = out_reg_real_12;
+    assign out_real_13 = out_reg_real_13;
+    assign out_real_14 = out_reg_real_14;
+    assign out_real_15 = out_reg_real_15;
+    
+    assign out_imag_0 = out_reg_imag_0;
+    assign out_imag_1 = out_reg_imag_1;
+    assign out_imag_2 = out_reg_imag_2;
+    assign out_imag_3 = out_reg_imag_3;
+    assign out_imag_4 = out_reg_imag_4;
+    assign out_imag_5 = out_reg_imag_5;
+    assign out_imag_6 = out_reg_imag_6;
+    assign out_imag_7 = out_reg_imag_7;
+    assign out_imag_8 = out_reg_imag_8;
+    assign out_imag_9 = out_reg_imag_9;
+    assign out_imag_10 = out_reg_imag_10;
+    assign out_imag_11 = out_reg_imag_11;
+    assign out_imag_12 = out_reg_imag_12;
+    assign out_imag_13 = out_reg_imag_13;
+    assign out_imag_14 = out_reg_imag_14;
+    assign out_imag_15 = out_reg_imag_15;
+
+endmodule
+
+// =====================================================
+// Bit-Reversal Module for 16-point FFT Output Reordering
+// =====================================================
+
+module bit_reversal_16pt (
+    input signed [15:0] in_real_0, in_real_1, in_real_2, in_real_3, 
+    in_real_4, in_real_5, in_real_6, in_real_7,
+    in_real_8, in_real_9, in_real_10, in_real_11,
+    in_real_12, in_real_13, in_real_14, in_real_15,
+    input signed [15:0] in_imag_0, in_imag_1, in_imag_2, in_imag_3, 
+    in_imag_4, in_imag_5, in_imag_6, in_imag_7,
+    in_imag_8, in_imag_9, in_imag_10, in_imag_11,
+    in_imag_12, in_imag_13, in_imag_14, in_imag_15,
+    output signed [15:0] out_real_0, out_real_1, out_real_2, out_real_3, 
+    out_real_4, out_real_5, out_real_6, out_real_7,
+    out_real_8, out_real_9, out_real_10, out_real_11,
+    out_real_12, out_real_13, out_real_14, out_real_15,
+    output signed [15:0] out_imag_0, out_imag_1, out_imag_2, out_imag_3, 
+    out_imag_4, out_imag_5, out_imag_6, out_imag_7,
+    out_imag_8, out_imag_9, out_imag_10, out_imag_11,
+    out_imag_12, out_imag_13, out_imag_14, out_imag_15
+);
+
+    // Bit-reversal mapping (combinational)
+    assign out_real_0 = in_real_0;   // 0000 -> 0000
+    assign out_real_1 = in_real_8;   // 0001 -> 1000
+    assign out_real_2 = in_real_4;   // 0010 -> 0100
+    assign out_real_3 = in_real_12;  // 0011 -> 1100
+    assign out_real_4 = in_real_2;   // 0100 -> 0010
+    assign out_real_5 = in_real_10;  // 0101 -> 1010
+    assign out_real_6 = in_real_6;   // 0110 -> 0110
+    assign out_real_7 = in_real_14;  // 0111 -> 1110
+    assign out_real_8 = in_real_1;   // 1000 -> 0001
+    assign out_real_9 = in_real_9;   // 1001 -> 1001
+    assign out_real_10 = in_real_5;  // 1010 -> 0101
+    assign out_real_11 = in_real_13; // 1011 -> 1101
+    assign out_real_12 = in_real_3;  // 1100 -> 0011
+    assign out_real_13 = in_real_11; // 1101 -> 1011
+    assign out_real_14 = in_real_7;  // 1110 -> 0111
+    assign out_real_15 = in_real_15; // 1111 -> 1111
+    
+    assign out_imag_0 = in_imag_0;
+    assign out_imag_1 = in_imag_8;
+    assign out_imag_2 = in_imag_4;
+    assign out_imag_3 = in_imag_12;
+    assign out_imag_4 = in_imag_2;
+    assign out_imag_5 = in_imag_10;
+    assign out_imag_6 = in_imag_6;
+    assign out_imag_7 = in_imag_14;
+    assign out_imag_8 = in_imag_1;
+    assign out_imag_9 = in_imag_9;
+    assign out_imag_10 = in_imag_5;
+    assign out_imag_11 = in_imag_13;
+    assign out_imag_12 = in_imag_3;
+    assign out_imag_13 = in_imag_11;
+    assign out_imag_14 = in_imag_7;
+    assign out_imag_15 = in_imag_15;
+
+endmodule
+
+module vedic_complex_mult(
+    input signed [15:0] a_real,
+    input signed [15:0] a_imag,
+    input signed [15:0] b_real,
+    input signed [15:0] b_imag,
+    output signed [15:0] p_real,
+    output signed [15:0] p_imag
+);
+
+    wire signed [31:0] arbr = a_real * b_real;
+    wire signed [31:0] aibi = a_imag * b_imag;
+    wire signed [31:0] arbi = a_real * b_imag;
+    wire signed [31:0] aibr = a_imag * b_real;
+
+    wire signed [31:0] real_part = arbr - aibi;
+    wire signed [31:0] imag_part = arbi + aibr;
+
+    // Rounding instead of truncation
+    assign p_real = (real_part + (1 << 14)) >>> 15;
+    assign p_imag = (imag_part + (1 << 14)) >>> 15;
+
+endmodule
+
+      
